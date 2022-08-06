@@ -20,8 +20,8 @@ def CombineWeights(batter,batter_prev,player_weights_dict):
 
 # For each year, for each day, grab game_id of every game on that day
 combined_weights_of_back_to_back_homers = {}
-all_games = []
-for year in range(1895, 2023):
+# Start at 1961 - as that was the first year there were back-to-back homers... By none other than Hank Aaron and Eddie Mathews
+for year in range(1901, 2023):
     print("INCREMENT YEAR: ")
     print(year)
     date = datetime.date(year,1,1)
@@ -53,10 +53,12 @@ for year in range(1895, 2023):
         print(len(games_on_date))
         for game in range(0, len(games_on_date)):
             gamePk = games_on_date[game]['game_id']
-            all_games.append(gamePk)
             ABIdx_prev = -5
             batter_prev = ""
-            plays = statsapi.game_scoring_play_data(gamePk)['plays']
+            try:
+                plays = statsapi.game_scoring_play_data(gamePk)['plays']
+            except:
+                plays = []
             for play in range(0, len(plays)):
                 batter= ""
                 ABIdx = plays[play]['atBatIndex']
@@ -83,8 +85,7 @@ for year in range(1895, 2023):
     with open('combined_weights_of_back_to_back_homers.txt', 'w') as f:
         f.write(json.dumps(combined_weights_of_back_to_back_homers))
 
-with open('all_games.txt', 'w') as f:
-    f.write(all_games)
+
 
 heaviest_duo = ""
 for duo in combined_weights_of_back_to_back_homers:
