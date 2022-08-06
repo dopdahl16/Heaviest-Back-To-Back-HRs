@@ -21,16 +21,19 @@ def CombineWeights(batter,batter_prev,player_weights_dict):
 # For each year, for each day, grab game_id of every game on that day
 combined_weights_of_back_to_back_homers = {}
 all_games = []
-today = datetime.date.today()
-for year in range(1875, 2023):
+for year in range(1895, 2023):
     print("INCREMENT YEAR: ")
     print(year)
     date = datetime.date(year,1,1)
     date_str = ""
     yearly_players = statsapi.get('sports_players',{'season':year})['people']
     player_weights_dict = {}
+    combined_weights_of_back_to_back_homers_yearly = {}
     for player in yearly_players:
-        player_weight = player['weight']
+        try:
+            player_weight = player['weight']
+        except:
+            pass
         player_weights_dict[player['fullName']] = player_weight
         player_weights_dict[player['nameFirstLast']] = player_weight
         player_weights_dict[player['firstLastName']] = player_weight
@@ -66,13 +69,22 @@ for year in range(1875, 2023):
                     print(batter_prev + "and " + batter + "hit back-to-back homers!")
                     combined_weight = CombineWeights(batter.strip(),batter_prev.strip(),player_weights_dict)
                     if combined_weight != None:
-                        combined_weights_of_back_to_back_homers[batter_prev + "and " + batter] = (combined_weight, date_formatted)
-                        print("Their combined weights were: " + str(combined_weight))
+                        # If there is already a record for this duo in the dictionary, and the previous record was heavier, then take the heavier one.
+                        # TODO: allow for multiple records from the same duos instead of just taking the highest. Flip keys and values in combined_weights_of_back_to_back_homers.
+                        if str(batter_prev + "and " + batter) in combined_weights_of_back_to_back_homers_yearly.keys() and combined_weight > combined_weights_of_back_to_back_homers_yearly[batter_prev + "and " + batter][0]:
+                            combined_weights_of_back_to_back_homers_yearly[batter_prev + "and " + batter] = (combined_weight, date_formatted)
+                            print("Their combined weights were: " + str(combined_weight))
+                        else:
+                            combined_weights_of_back_to_back_homers_yearly[batter_prev + "and " + batter] = (combined_weight, date_formatted)
+                            print("Their combined weights were: " + str(combined_weight))
                 ABIdx_prev = ABIdx
                 batter_prev = batter
+    combined_weights_of_back_to_back_homers.update(combined_weights_of_back_to_back_homers_yearly)
+    with open('combined_weights_of_back_to_back_homers.txt', 'w') as f:
+        f.write(json.dumps(combined_weights_of_back_to_back_homers))
 
-with open('combined_weights_of_back_to_back_homers.txt', 'w') as f:
-    f.write(json.dumps(combined_weights_of_back_to_back_homers))
+with open('all_games.txt', 'w') as f:
+    f.write(all_games)
 
 heaviest_duo = ""
 for duo in combined_weights_of_back_to_back_homers:
