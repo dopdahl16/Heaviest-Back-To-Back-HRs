@@ -21,7 +21,7 @@ def CombineWeights(batter,batter_prev,player_weights_dict):
 # For each year, for each day, grab game_id of every game on that day
 combined_weights_of_back_to_back_homers = {}
 # Start at 1961 - as that was the first year there were back-to-back homers... By none other than Hank Aaron and Eddie Mathews
-for year in range(1961, 2023):
+for year in range(1992, 2023):
     print("INCREMENT YEAR: ")
     print(year)
     date = datetime.date(year,1,1)
